@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load ticket_extras %}
+{% block title %}Ticket #{{ ticket.pk }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start">
+  <div>
+    <h2>Ticket #{{ ticket.pk }} - {{ ticket.subject }}</h2>
+    <p class="mb-1"><strong>Área:</strong> {{ ticket.area.name }}</p>
+    <p class="mb-1"><strong>Estado:</strong> <span class="badge text-bg-{{ ticket.status|status_badge }}">{{ ticket.get_status_display }}</span></p>
+    <p class="mb-3"><strong>Prioridad:</strong> <span class="badge text-bg-{{ ticket.priority|priority_badge }}">{{ ticket.get_priority_display }}</span></p>
+  </div>
+</div>
+<div class="card card-body mb-3">
+  <h5>Descripción inicial</h5>
+  <p>{{ ticket.description|linebreaks }}</p>
+  {% if ticket.attachments.all %}
+    <h6>Adjuntos del ticket</h6>
+    <ul>
+      {% for file in ticket.attachments.all %}
+        <li><a href="{{ file.file.url }}">{{ file.file.name }}</a></li>
+      {% empty %}{% endfor %}
+    </ul>
+  {% endif %}
+</div>
+
+{% if update_form %}
+<form method="post" action="{% url 'tickets:ticket_update' ticket.pk %}" class="card card-body mb-3">
+  {% csrf_token %}
+  <h5>Gestión del ticket</h5>
+  {{ update_form.as_p }}
+  <button class="btn btn-outline-primary" type="submit">Actualizar estado/asignación</button>
+</form>
+{% endif %}
+
+<h4>Conversación</h4>
+<div class="list-group mb-3">
+  {% for comment in comments %}
+    <div class="list-group-item">
+      <div class="d-flex justify-content-between">
+        <strong>{{ comment.author.username }}</strong>
+        <small>{{ comment.created_at|date:'d/m/Y H:i' }}</small>
+      </div>
+      {% if comment.is_internal %}<span class="badge text-bg-warning">Interno</span>{% endif %}
+      <p class="mb-1 mt-2">{{ comment.body|linebreaks }}</p>
+      {% if comment.attachments.all %}
+      <ul>
+        {% for att in comment.attachments.all %}
+          <li><a href="{{ att.file.url }}">{{ att.file.name }}</a></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+  {% empty %}
+    <div class="list-group-item">Sin comentarios todavía.</div>
+  {% endfor %}
+</div>
+
+<form method="post" enctype="multipart/form-data" class="card card-body">
+  {% csrf_token %}
+  <input type="hidden" name="add_comment" value="1">
+  <h5>Agregar respuesta</h5>
+  {{ form.as_p }}
+  <button type="submit" class="btn btn-primary">Enviar respuesta</button>
+</form>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load ticket_extras %}
+{% block title %}Panel agente{% endblock %}
+{% block content %}
+<h2 class="mb-3">Panel de tickets</h2>
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-3"><select class="form-select" name="status"><option value="">Estado</option>{% for k,v in status_choices %}<option value="{{k}}" {% if status == k %}selected{% endif %}>{{v}}</option>{% endfor %}</select></div>
+  <div class="col-md-3"><input class="form-control" type="number" name="area" placeholder="ID área" value="{{ area|default:'' }}"></div>
+  <div class="col-md-3"><select class="form-select" name="priority"><option value="">Prioridad</option>{% for k,v in priority_choices %}<option value="{{k}}" {% if priority == k %}selected{% endif %}>{{v}}</option>{% endfor %}</select></div>
+  <div class="col-md-3"><button class="btn btn-primary w-100">Filtrar</button></div>
+</form>
+<table class="table table-hover align-middle">
+  <thead><tr><th>#</th><th>Asunto</th><th>Creador</th><th>Área</th><th>Estado</th><th>Prioridad</th><th>Asignado</th></tr></thead>
+  <tbody>
+  {% for ticket in tickets %}
+    <tr>
+      <td><a href="{% url 'tickets:ticket_detail' ticket.pk %}">#{{ticket.pk}}</a></td>
+      <td>{{ ticket.subject }}</td>
+      <td>{{ ticket.created_by.username }}</td>
+      <td>{{ ticket.area.name }}</td>
+      <td><span class="badge text-bg-{{ ticket.status|status_badge }}">{{ ticket.get_status_display }}</span></td>
+      <td><span class="badge text-bg-{{ ticket.priority|priority_badge }}">{{ ticket.get_priority_display }}</span></td>
+      <td>{{ ticket.assigned_to.username|default:'Sin asignar' }}</td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="7">No hay tickets para mostrar.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
