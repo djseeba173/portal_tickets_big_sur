@@ -8,8 +8,20 @@ class MultiFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
 
 
+class MultipleFileField(forms.FileField):
+    widget = MultiFileInput
+
+    def clean(self, data, initial=None):
+        single_clean = super().clean
+        if not data:
+            return []
+        if isinstance(data, (list, tuple)):
+            return [single_clean(item, initial) for item in data]
+        return [single_clean(data, initial)]
+
+
 class TicketCreateForm(forms.ModelForm):
-    attachments = forms.FileField(required=False, widget=MultiFileInput(attrs={"class": "form-control"}))
+    attachments = MultipleFileField(required=False, widget=MultiFileInput(attrs={"class": "form-control"}))
 
     class Meta:
         model = Ticket
@@ -33,7 +45,7 @@ class TicketCreateForm(forms.ModelForm):
 class TicketCommentForm(forms.Form):
     body = forms.CharField(widget=forms.Textarea(attrs={"class": "form-control", "rows": 4}), label="Mensaje")
     is_internal = forms.BooleanField(required=False, label="Nota interna (solo agentes)")
-    attachments = forms.FileField(required=False, widget=MultiFileInput(attrs={"class": "form-control"}))
+    attachments = MultipleFileField(required=False, widget=MultiFileInput(attrs={"class": "form-control"}))
 
     def __init__(self, *args, is_agent=False, **kwargs):
         super().__init__(*args, **kwargs)

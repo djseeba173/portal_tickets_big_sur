@@ -15,7 +15,10 @@
     <div class="d-flex text-white gap-3">
       {% if user.is_authenticated %}
         <span>{{ user.username }}</span>
-        <a class="btn btn-outline-light btn-sm" href="{% url 'logout' %}">Salir</a>
+        <form method="post" action="{% url 'logout' %}" class="mb-0">
+          {% csrf_token %}
+          <button class="btn btn-outline-light btn-sm" type="submit">Salir</button>
+        </form>
       {% endif %}
     </div>
   </div>

@@ -122,9 +122,9 @@ def ticket_update(request, pk):
     if request.method != "POST":
         return redirect("tickets:ticket_detail", pk=ticket.pk)
 
+    previous_status = ticket.status
     form = TicketUpdateForm(request.POST, instance=ticket)
     if form.is_valid():
-        previous_status = ticket.status
         ticket = form.save(commit=False)
 
         if form.cleaned_data.get("take_ownership"):
